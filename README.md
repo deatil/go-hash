@@ -1,0 +1,2 @@
+# go-hash
+go-hash
