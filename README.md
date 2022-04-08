@@ -3,7 +3,7 @@
 
 ### 项目介绍
 
-*  常用的摘要 hash 算法合集
+*  常用的摘要 hash 算法
 
 
 ### 使用方法
@@ -13,7 +13,7 @@ package main
 
 import (
     "fmt"
-    "github.com/deatil/go-hash"
+    "github.com/deatil/go-hash/hash"
 )
 
 func main() {
