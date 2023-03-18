@@ -42,6 +42,26 @@ func main() {
         ToHexString()             // 输出数据, 返回数据类型
 
     fmt.Println("MD5 结果2：", md5Data2)
+
+    // =============
+
+    // HmacSHA1 获取摘要
+    hmacMD5Data := hash.
+        FromString("useData").                    // 输入数据, 需要获取摘要的数据
+        Hmac(hash.HmacSHA1.New, []byte("pass")).  // 摘要方式
+        ToHexString()                             // 输出数据, 返回数据类型
+
+    fmt.Println("HmacSHA1 结果：", hmacMD5Data)
+
+    // HmacSHA1 获取摘要
+    hmacMD5Data2 := hash.
+        Hashing().                                   // 输入数据, 为空
+        NewHmac(hash.HmacSHA1.New, []byte("pass")).  // 摘要方式
+        Write([]byte("useData")).                    // 需要获取摘要的数据
+        Sum(nil).                                    // 计算
+        ToHexString()                                // 输出数据, 返回数据类型
+
+    fmt.Println("HmacSHA1 结果2：", hmacMD5Data2)
 }
 
 ~~~
@@ -64,19 +84,7 @@ func main() {
 `CRC32_IEEE()`, `CRC32_Castagnoli()`, `CRC32_Koopman()`,
 `CRC64_ISO()`, `CRC64_ECMA()`,
 `Fnv32()`, `Fnv32a()`, `Fnv64()`, `Fnv64a()`, `Fnv128()`, `Fnv128a()`,
-`HmacAdler32(secret []byte)`, 
-`HmacMd2(secret []byte)`, 
-`HmacMd4(secret []byte)`, `HmacMd5(secret []byte)`,
-`HmacSHA1(secret []byte)`, `HmacSha224(secret []byte)`,
-`HmacSha256(secret []byte)`, `HmacSha384(secret []byte)`,
-`HmacSha512(secret []byte)`, 
-`HmacSha512_224(secret []byte)`,
-`HmacSha512_256(secret []byte)`,
-`HmacRipemd160(secret []byte)`,
-`HmacSHA3_224(secret []byte)`,
-`HmacSHA3_256(secret []byte)`,
-`HmacSHA3_384(secret []byte)`,
-`HmacSHA3_512(secret []byte)`,
+`Hmac(h func() hash.Hash, secret []byte)`, 
 `Keccak256()`, `Keccak512()`,
 `Maphash()`,
 `MD2()`, `MD4()`, `MD5()`, `MD5SHA1()`,
@@ -96,19 +104,6 @@ func main() {
 `NewCRC64_ISO()`, `NewCRC64_ECMA()`,
 `NewFnv32()`, `NewFnv32a()`, `NewFnv64()`, `NewFnv64a()`, `NewFnv128()`, `NewFnv128a()`,
 `NewHmac(h func() hash.Hash, secret []byte)`,
-`NewHmacAdler32(secret []byte)`, 
-`NewHmacMd2(secret []byte)`, 
-`NewHmacMd4(secret []byte)`, `NewHmacMd5(secret []byte)`,
-`NewHmacSHA1(secret []byte)`, `NewHmacSha224(secret []byte)`,
-`NewHmacSha256(secret []byte)`, `NewHmacSha384(secret []byte)`,
-`NewHmacSha512(secret []byte)`, 
-`NewHmacSha512_224(secret []byte)`,
-`NewHmacSha512_256(secret []byte)`,
-`NewHmacRipemd160(secret []byte)`,
-`NewHmacSHA3_224(secret []byte)`,
-`NewHmacSHA3_256(secret []byte)`,
-`NewHmacSHA3_384(secret []byte)`,
-`NewHmacSHA3_512(secret []byte)`,
 `NewKeccak256()`, `NewKeccak512()`,
 `NewMaphash()`,
 `NewMD2()`, `NewMD4()`, `NewMD5()`,
@@ -119,6 +114,9 @@ func main() {
 `NewSHA1()`, `NewSHA224()`, `NewSHA256()`, `NewSHA384()`, `NewSHA512()`, `NewSHA512_224()`, `NewSHA512_256()`,
 `NewSHA3_224()`, `NewSHA3_256()`, `NewSHA3_384()`, `NewSHA3_512()`,
 `NewSM3()`
+
+*  Hmac 可用 hash:
+`HmacADLER32`, `HmacMD2`, `HmacMD4`, `HmacMD5`, `HmacSHA1`, `HmacSHA224`, `HmacSHA256`, `HmacSHA384`, `HmacSHA512`, `HmacSHA512_224`, `HmacSHA512_256`, `HmacRIPEMD160`, `HmacSHA3_224`, `HmacSHA3_256`, `HmacSHA3_384`, `HmacSHA3_512`
 
 
 ### 开源协议
