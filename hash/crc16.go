@@ -6,6 +6,7 @@ import (
 )
 
 // CRC16_X25 哈希值
+// data := ToString()
 func (this Hash) CRC16_X25() Hash {
     data := x25.CRC16X25(string(this.data))
 
@@ -15,6 +16,7 @@ func (this Hash) CRC16_X25() Hash {
 }
 
 // CRC16_Modbus 哈希值
+// data := ToString()
 func (this Hash) CRC16_Modbus() Hash {
     data := modbus.CRC16Modbus(string(this.data))
 

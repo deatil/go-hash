@@ -60,7 +60,7 @@ func Test_HmacSHA1(t *testing.T) {
     assert := assertT(t)
     assertError := assertErrorT(t)
 
-    for index, test := range hmacMd5Tests {
+    for index, test := range hmacSHA1Tests {
         e := FromString(test.input).HmacSHA1([]byte(test.secret))
 
         t.Run(fmt.Sprintf("HmacSHA1_test_%d", index), func(t *testing.T) {
@@ -74,7 +74,7 @@ func Test_NewHmacSHA1(t *testing.T) {
     assert := assertT(t)
     assertError := assertErrorT(t)
 
-    for index, test := range hmacMd5Tests {
+    for index, test := range hmacSHA1Tests {
         e := Hashing().NewHmacSHA1([]byte(test.secret)).
             Write([]byte(test.input)).Sum(nil)
 
