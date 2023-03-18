@@ -3,8 +3,8 @@
 
 ### 项目介绍
 
-*  常用的摘要 `hash` 算法
-*  算法包括: `MD2`, `MD4`, `MD5`, `Hmac`, `Ripemd160`, `SHA1`, `SHA3`, `SHA256`, `SM3(国密)`
+*  常用的摘要算法
+*  算法包括: (MD2/MD4/MD5/Hmac/Ripemd160/SHA1/SHA3/SHA256/SM3)
 
 
 ### 下载安装
