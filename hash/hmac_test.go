@@ -5,82 +5,48 @@ import (
     "testing"
 )
 
-var hmacMd5Tests = []struct {
+var hmacTests = []struct {
+    name   string
+    hash   HmacHash
     input  string
     secret string
     output string
 }{
-    {"sdfgsdgfsdfg123132", "pass123", "bf4ce19abed97f9d852c5055d08fc188"},
-    {"dfg.;kp[jewijr0-34lsd", "pass123", "d273f8e00fad1b2bd6b048b2b6aa1cf2"},
-    {"123123", "pass123", "12c3626311950ac87858b935e1107269"},
+    {"MD5", HmacMD5, "sdfgsdgfsdfg123132", "pass123", "bf4ce19abed97f9d852c5055d08fc188"},
+    {"SHA1", HmacSHA1, "dfg.;kp[jewijr0-34lsd", "pass123", "11a43b22a8449fc36918873ac32fd5a99e466c3d"},
+    {"SHA224", HmacSHA224, "sdfgsdgfsdfg123156", "pass123", "3c405828e9a2711f50c1fa56c431e1d4df046de53b25a4676d648473"},
+    {"SHA256", HmacSHA256, "sdf,gsdgfsdfg123156", "pass123", "810e24593dbf7a616440321bf2b78ed72fcd4d681a98cecad1d890fece618fdc"},
+    {"SHA384", HmacSHA384, "sdf,gsdgfsdfg123156", "pass123", "163bb0adb36d1429db500d66410371b809f95c997098b1fa26808e78f6f709ed9a91f31f27081eeecfa8b563ed969958"},
+    {"SHA512", HmacSHA512, "sdf,gsdgfsdfg123156", "pass123", "aaf38f79d73a28a02c8ae26635e90a5b716f84d3365a1aa4333f86a99d8a85774ec3eb3c1e4d8e05df393ae7c60dd024feacafbd3564395fee52874902e54a93"},
+    {"RIPEMD160", HmacRIPEMD160, "sdf,gsdgfsdfg123156", "pass123", "a6fde50583758876022d48f90db93bcfedfe9615"},
+    {"SHA3_256", HmacSHA3_256, "sdffgsdgfsdfg123156rt5", "pass123", "6d9504b686faeeac4eb66f96603c55f4033181da671644357b7f40cd838311ac"},
 }
 
-func Test_HmacMD5(t *testing.T) {
+func Test_Hmac(t *testing.T) {
     assert := assertT(t)
     assertError := assertErrorT(t)
 
-    for index, test := range hmacMd5Tests {
-        e := FromString(test.input).Hmac(HmacMD5.New, []byte(test.secret))
+    for index, test := range hmacTests {
+        e := FromString(test.input).Hmac(test.hash.New, []byte(test.secret))
 
-        t.Run(fmt.Sprintf("HmacMD5_test_%d", index), func(t *testing.T) {
-            assertError(e.Error, "HmacMD5")
-            assert(test.output, e.ToHexString(), "HmacMD5")
+        t.Run(fmt.Sprintf("Hmac_test_%d", index), func(t *testing.T) {
+            assertError(e.Error, "Hmac-" + test.name)
+            assert(test.output, e.ToHexString(), "Hmac-" + test.name)
         })
     }
 }
 
-func Test_NewHmacMD5(t *testing.T) {
+func Test_NewHmac(t *testing.T) {
     assert := assertT(t)
     assertError := assertErrorT(t)
 
-    for index, test := range hmacMd5Tests {
-        e := Hashing().NewHmac(HmacMD5.New, []byte(test.secret)).
+    for index, test := range hmacTests {
+        e := Hashing().NewHmac(test.hash.New, []byte(test.secret)).
             Write([]byte(test.input)).Sum(nil)
 
-        t.Run(fmt.Sprintf("NewHmacMD5_test_%d", index), func(t *testing.T) {
-            assertError(e.Error, "NewHmacMD5")
-            assert(test.output, e.ToHexString(), "NewHmacMD5")
-        })
-    }
-}
-
-// ===========
-
-var hmacSHA1Tests = []struct {
-    input  string
-    secret string
-    output string
-}{
-    {"sdfgsdgfsdfg123132", "pass123", "4ba7dc0364e2c375a0ba1fdacdf0a7a1d24b00d6"},
-    {"dfg.;kp[jewijr0-34lsd", "pass123", "11a43b22a8449fc36918873ac32fd5a99e466c3d"},
-    {"123123", "pass123", "2bc70da9a375a9d9481935eee5ac4e374b33ed8e"},
-}
-
-func Test_HmacSHA1(t *testing.T) {
-    assert := assertT(t)
-    assertError := assertErrorT(t)
-
-    for index, test := range hmacSHA1Tests {
-        e := FromString(test.input).Hmac(HmacSHA1.New, []byte(test.secret))
-
-        t.Run(fmt.Sprintf("HmacSHA1_test_%d", index), func(t *testing.T) {
-            assertError(e.Error, "HmacSHA1")
-            assert(test.output, e.ToHexString(), "HmacSHA1")
-        })
-    }
-}
-
-func Test_NewHmacSHA1(t *testing.T) {
-    assert := assertT(t)
-    assertError := assertErrorT(t)
-
-    for index, test := range hmacSHA1Tests {
-        e := Hashing().NewHmac(HmacSHA1.New, []byte(test.secret)).
-            Write([]byte(test.input)).Sum(nil)
-
-        t.Run(fmt.Sprintf("NewHmacSHA1_test_%d", index), func(t *testing.T) {
-            assertError(e.Error, "NewHmacSHA1")
-            assert(test.output, e.ToHexString(), "NewHmacSHA1")
+        t.Run(fmt.Sprintf("NewHmac_test_%d", index), func(t *testing.T) {
+            assertError(e.Error, "NewHmac" + test.name)
+            assert(test.output, e.ToHexString(), "NewHmac" + test.name)
         })
     }
 }
