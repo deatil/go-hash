@@ -13,7 +13,7 @@ func New(k []byte) hash.Hash {
     return NewWithCDroundsAndHashSize(k, 0, 0, 0)
 }
 
-// NewWithCDrounds returns a new hash.Hash computing the Siphash checksum.
+// NewWithCDroundsAndHashSize returns a new hash.Hash computing the Siphash checksum.
 func NewWithCDroundsAndHashSize(k []byte, crounds, drounds int32, hashSize int) hash.Hash {
     if len(k) != KEY_SIZE {
         panic("key size error")
@@ -21,7 +21,7 @@ func NewWithCDroundsAndHashSize(k []byte, crounds, drounds int32, hashSize int) 
 
     h := new(digest)
     h.Reset()
-    h.WithHashSize(hashSize)
+    h.setHashSize(hashSize)
     h.init(k, crounds, drounds)
     return h
 }
@@ -65,10 +65,10 @@ func (this *digest) Write(p []byte) (n int, err error) {
     var v2 uint64 = this.v2
     var v3 uint64 = this.v3
 
-    var in []byte
-    copy(in, p)
+    var inlen int = len(p)
 
-    var inlen int = len(in)
+    var in []byte = make([]byte, inlen)
+    copy(in, p)
 
     n = inlen
 
@@ -98,7 +98,7 @@ func (this *digest) Write(p []byte) (n int, err error) {
             SIPROUND(&v0, &v1, &v2, &v3)
         }
 
-        v0 ^= m;
+        v0 ^= m
     }
 
     left = int32(inlen & (BLOCK_SIZE-1)) /* gets put into leavings */
@@ -116,8 +116,8 @@ func (this *digest) Write(p []byte) (n int, err error) {
     }
 
     /* save leavings and other ctx */
-    if left != 0 {
-        copy(this.leavings[:], end[:left])
+    if left > 0 {
+        copy(this.leavings[:], end[:])
     }
     this.len = uint32(left)
 
@@ -130,13 +130,11 @@ func (this *digest) Write(p []byte) (n int, err error) {
 }
 
 func (this *digest) Sum(p []byte) []byte {
-    ctx0 := *this
-    hash := ctx0.checkSum()
+    hash := this.checkSum()
     return append(p, hash[:]...)
 }
 
 func (this *digest) checkSum() (hash []byte) {
-    /* finalize hash */
     var i uint32
     var b uint64 = this.totalInlen << 56
     var v0 uint64 = this.v0
@@ -180,6 +178,7 @@ func (this *digest) checkSum() (hash []byte) {
     for i = 0; i < this.crounds; i++ {
         SIPROUND(&v0, &v1, &v2, &v3)
     }
+
     v0 ^= b
 
     if (this.hashSize == MAX_DIGEST_SIZE) {
@@ -212,7 +211,7 @@ func (this *digest) checkSum() (hash []byte) {
     return out
 }
 
-func (this *digest) WithHashSize(hashSize int) bool {
+func (this *digest) setHashSize(hashSize int) bool {
     hashSize = this.adjustHashSize(hashSize)
 
     if (hashSize != MIN_DIGEST_SIZE && hashSize != MAX_DIGEST_SIZE) {

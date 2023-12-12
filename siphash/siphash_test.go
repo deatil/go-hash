@@ -18,7 +18,7 @@ func Test_Hash(t *testing.T) {
     }
 }
 
-func test_Check(t *testing.T) {
+func Test_Check8(t *testing.T) {
     var key [KEY_SIZE]byte
     var in []byte
     var i int
@@ -40,6 +40,32 @@ func test_Check(t *testing.T) {
     res := h.Sum(nil)
 
     if !bytes.Equal(expected, res) {
-        t.Error("Check Hash error")
+        t.Errorf("Check Hash error, got %x, want %x", res, expected)
+    }
+}
+
+func Test_Check16(t *testing.T) {
+    var key [KEY_SIZE]byte
+    var in []byte
+    var i int
+
+    expected := []byte{ 0x9e, 0x25, 0xfc, 0x83, 0x3f, 0x22, 0x90, 0x73, 0x3e, 0x93, 0x44, 0xa5, 0xe8, 0x38, 0x39, 0xeb, }
+
+    for i = 0; i < KEY_SIZE; i++ {
+        key[i] = byte(i)
+    }
+
+    inlen := 20
+    in = make([]byte, inlen)
+    for i = 0; i < inlen; i++ {
+        in[i] = byte(i)
+    }
+
+    h := NewWithCDroundsAndHashSize(key[:], 0, 0, 16)
+    h.Write(in[:])
+    res := h.Sum(nil)
+
+    if !bytes.Equal(expected, res) {
+        t.Errorf("Check Hash error, got %x, want %x", res, expected)
     }
 }

@@ -29,10 +29,16 @@ func U64TO8_LE(p []byte, v uint64) {
 }
 
 func U8TO64_LE(p []byte) uint64 {
-    return (uint64(p[0])) | (uint64(p[1]) << 8) |
-         (uint64(p[2]) << 16) | (uint64(p[3]) << 24) |
-         (uint64(p[4]) << 32) | (uint64(p[5]) << 40) |
-         (uint64(p[6]) << 48) | (uint64(p[7]) << 56)
+    v := (uint64(p[0])      ) |
+         (uint64(p[1]) <<  8) |
+         (uint64(p[2]) << 16) |
+         (uint64(p[3]) << 24) |
+         (uint64(p[4]) << 32) |
+         (uint64(p[5]) << 40) |
+         (uint64(p[6]) << 48) |
+         (uint64(p[7]) << 56)
+
+    return v
 }
 
 func SIPROUND(v0, v1, v2, v3 *uint64) {
