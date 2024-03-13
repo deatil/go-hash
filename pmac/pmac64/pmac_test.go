@@ -1,28 +1,27 @@
-package md2
+package pmac64
 
 import (
     "fmt"
     "testing"
+    "crypto/des"
 )
 
 func Test_Check(t *testing.T) {
+    key := []byte("test1235")
     in := []byte("nonce-asdfg")
-    check := "b964b13bcf98269d49356894e7849374"
+    check := "40b82d71e4d30a9d"
 
-    h := New()
+    block, err := des.NewCipher(key)
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    h := New(block)
     h.Write(in)
 
     out := h.Sum(nil)
 
     if fmt.Sprintf("%x", out) != check {
         t.Errorf("Check error. got %x, want %s", out, check)
-    }
-
-    // ==========
-
-    out2 := Sum(in)
-
-    if fmt.Sprintf("%x", out2) != check {
-        t.Errorf("Check error. got %x, want %s", out2, check)
     }
 }

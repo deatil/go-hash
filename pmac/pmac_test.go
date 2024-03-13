@@ -1,28 +1,27 @@
-package md2
+package pmac
 
 import (
     "fmt"
     "testing"
+    "crypto/aes"
 )
 
 func Test_Check(t *testing.T) {
+    key := []byte("test1235test1235")
     in := []byte("nonce-asdfg")
-    check := "b964b13bcf98269d49356894e7849374"
+    check := "8d7c222273ad1056e005f9edddfca276"
 
-    h := New()
+    block, err := aes.NewCipher(key)
+    if err != nil {
+        t.Fatal(err)
+    }
+
+    h := New(block)
     h.Write(in)
 
     out := h.Sum(nil)
 
     if fmt.Sprintf("%x", out) != check {
         t.Errorf("Check error. got %x, want %s", out, check)
-    }
-
-    // ==========
-
-    out2 := Sum(in)
-
-    if fmt.Sprintf("%x", out2) != check {
-        t.Errorf("Check error. got %x, want %s", out2, check)
     }
 }

@@ -1,4 +1,4 @@
-package md2
+package jh
 
 import (
     "fmt"
@@ -7,7 +7,7 @@ import (
 
 func Test_Check(t *testing.T) {
     in := []byte("nonce-asdfg")
-    check := "b964b13bcf98269d49356894e7849374"
+    check := "84bcd622325787f4096e4aae5fbec20f1dd041ba22785a2e49d9b9ad0f976afa"
 
     h := New()
     h.Write(in)
