@@ -14,7 +14,7 @@ func fromHex(s string) []byte {
 func Test_Hash224(t *testing.T) {
     msg := []byte("test-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-data")
 
-    h, _ := New224()
+    h := New224()
     h.Write(msg)
     dst := h.Sum(nil)
 
@@ -26,7 +26,7 @@ func Test_Hash224(t *testing.T) {
 func Test_Hash256(t *testing.T) {
     msg := []byte("test-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-data")
 
-    h, _ := New256()
+    h := New256()
     h.Write(msg)
     dst := h.Sum(nil)
 
@@ -38,7 +38,7 @@ func Test_Hash256(t *testing.T) {
 func Test_Hash384(t *testing.T) {
     msg := []byte("test-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-data")
 
-    h, _ := New384()
+    h := New384()
     h.Write(msg)
     dst := h.Sum(nil)
 
@@ -50,7 +50,7 @@ func Test_Hash384(t *testing.T) {
 func Test_Hash512(t *testing.T) {
     msg := []byte("test-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-data")
 
-    h, _ := New512()
+    h := New512()
     h.Write(msg)
     dst := h.Sum(nil)
 
@@ -90,7 +90,7 @@ func Test_Hash224_Check(t *testing.T) {
     }
 
     for i, test := range tests {
-        h, _ := New224()
+        h := New224()
         h.Write(test.msg)
         sum := h.Sum(nil)
 
@@ -125,7 +125,7 @@ func Test_Hash256_Check(t *testing.T) {
     }
 
     for i, test := range tests {
-        h, _ := New256()
+        h := New256()
         h.Write(test.msg)
         sum := h.Sum(nil)
 
@@ -156,7 +156,7 @@ func Test_Hash384_Check(t *testing.T) {
     }
 
     for i, test := range tests {
-        h, _ := New384()
+        h := New384()
         h.Write(test.msg)
         sum := h.Sum(nil)
 
@@ -187,7 +187,7 @@ func Test_Hash512_Check(t *testing.T) {
     }
 
     for i, test := range tests {
-        h, _ := New512()
+        h := New512()
         h.Write(test.msg)
         sum := h.Sum(nil)
 

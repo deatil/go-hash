@@ -43,7 +43,6 @@ func NewWithSalt(hashsize int, salt []byte) (hash.Hash, error) {
 
     d := new(digest)
     d.hs = hashsize
-    d.Reset()
 
     if len(salt) > 0 {
         if len(salt) != 16 {
@@ -55,6 +54,8 @@ func NewWithSalt(hashsize int, salt []byte) (hash.Hash, error) {
     } else {
         d.salt = [2]uint64{}
     }
+
+    d.Reset()
 
     return d, nil
 }
