@@ -20,7 +20,6 @@ func NewKmac512(key []byte) (hash.Hash, error) {
 
     d := new(kmac512)
     d.h = New512()
-    d.Reset()
     d.init(key)
 
     return d, nil
