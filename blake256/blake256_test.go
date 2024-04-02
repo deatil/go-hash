@@ -134,7 +134,7 @@ var vectors256salt = []struct{ out, in, salt string }{
 
 func TestSalt(t *testing.T) {
     for i, v := range vectors256salt {
-        h := NewSalt([]byte(v.salt))
+        h := NewWithSalt([]byte(v.salt))
         h.Write([]byte(v.in))
         res := fmt.Sprintf("%x", h.Sum(nil))
         if res != v.out {
@@ -148,7 +148,7 @@ func TestSalt(t *testing.T) {
             t.Errorf("expected panic for bad salt length")
         }
     }()
-    NewSalt([]byte{1, 2, 3, 4, 5, 6, 7, 8})
+    NewWithSalt([]byte{1, 2, 3, 4, 5, 6, 7, 8})
 }
 
 func TestTwoWrites(t *testing.T) {
