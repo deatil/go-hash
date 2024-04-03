@@ -50,21 +50,17 @@ func uint32sToBytes(w []uint32) []byte {
     return dst
 }
 
-func circularLeft(x uint32, n uint32) uint32 {
-    return bits.RotateLeft32(x, int(n))
-}
-
-func ROT(x, n uint32) uint32 {
-    return x << (32 - n) | x >> n
+func ror(x uint32, n int) uint32 {
+    return bits.RotateLeft32(x, 32 - n)
 }
 
 func G(v *[16]uint32, m []uint32, i int, a, b, c, d, e int) {
     v[a] += (m[sigma[i][e]] ^ u256[sigma[i][e+1]]) + v[b]
-    v[d] = ROT(v[d] ^ v[a], 16)
+    v[d] = ror(v[d] ^ v[a], 16)
     v[c] += v[d]
-    v[b] = ROT(v[b] ^ v[c], 12)
+    v[b] = ror(v[b] ^ v[c], 12)
     v[a] += (m[sigma[i][e+1]] ^ u256[sigma[i][e]])+v[b]
-    v[d] = ROT(v[d] ^ v[a], 8)
+    v[d] = ror(v[d] ^ v[a], 8)
     v[c] += v[d]
-    v[b] = ROT(v[b] ^ v[c], 7)
+    v[b] = ror(v[b] ^ v[c], 7)
 }
