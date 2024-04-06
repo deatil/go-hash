@@ -42,28 +42,28 @@ func Test_Sum(t *testing.T) {
         },
     }
 
-    c := New()
+    c := NewHS512()
 
     for _, r := range table {
         c.Reset()
         c.Write([]byte(r.in))
         got := fmt.Sprintf("%x", c.Sum(nil))
         if got != r.want {
-            t.Errorf("New.Sum(%#v), got %#v, want %#v", r.in, got, r.want)
+            t.Errorf("NewHS512.Sum(%#v), got %#v, want %#v", r.in, got, r.want)
         }
 
         // =====
 
-        sum2 := Sum([]byte(r.in))
+        sum2 := SumHS512([]byte(r.in))
 
         got = fmt.Sprintf("%x", sum2)
         if got != r.want {
-            t.Errorf("Sum(%#v), got %#v, want %#v", r.in, got, r.want)
+            t.Errorf("SumHS512(%#v), got %#v, want %#v", r.in, got, r.want)
         }
     }
 
     for _, r := range table {
-        c := New()
+        c := NewHS512()
         for _, b := range []byte(r.in) {
             // byte at at time test
             c.Write([]byte{b})
@@ -81,11 +81,11 @@ func Test_Sum(t *testing.T) {
 }
 
 func Test_Marshal(t *testing.T) {
-    a := New()
+    a := NewHS512()
     a.Write([]byte{1, 2, 3})
     save, _ := a.(encoding.BinaryMarshaler).MarshalBinary()
 
-    b := New()
+    b := NewHS512()
     b.(encoding.BinaryUnmarshaler).UnmarshalBinary(save)
 
     asum := a.Sum(nil)
@@ -193,28 +193,28 @@ func Test_Others(t *testing.T) {
         fn func() hash.Hash
     }{
         {
-            fn: New,
+            fn: NewHS512,
         },
         {
-            fn: New512x,
+            fn: NewHS512x,
         },
         {
-            fn: New384,
+            fn: NewHS384,
         },
         {
-            fn: New256,
+            fn: NewHS256,
         },
         {
-            fn: New224,
+            fn: NewHS224,
         },
         {
-            fn: New192,
+            fn: NewHS192,
         },
         {
-            fn: New160,
+            fn: NewHS160,
         },
         {
-            fn: New128,
+            fn: NewHS128,
         },
 
         {
@@ -249,58 +249,100 @@ func Test_Sum_Others(t *testing.T) {
     msg := "The quick brown fox jumps over the lazy dog"
 
     {
-        sum := Sum([]byte(msg))
+        sum := SumHS512([]byte(msg))
         if len(sum) == 0 {
             t.Errorf("fail zero")
         }
     }
 
     {
-        sum := Sum384([]byte(msg))
+        sum := SumHS384([]byte(msg))
         if len(sum) == 0 {
             t.Errorf("fail zero")
         }
     }
 
     {
-        sum := Sum256([]byte(msg))
+        sum := SumHS256([]byte(msg))
         if len(sum) == 0 {
             t.Errorf("fail zero")
         }
     }
 
     {
-        sum := Sum224([]byte(msg))
+        sum := SumHS224([]byte(msg))
         if len(sum) == 0 {
             t.Errorf("fail zero")
         }
     }
 
     {
-        sum := Sum192([]byte(msg))
+        sum := SumHS192([]byte(msg))
         if len(sum) == 0 {
             t.Errorf("fail zero")
         }
     }
 
     {
-        sum := Sum160([]byte(msg))
+        sum := SumHS160([]byte(msg))
         if len(sum) == 0 {
             t.Errorf("fail zero")
         }
     }
 
     {
-        sum := Sum128([]byte(msg))
+        sum := SumHS128([]byte(msg))
         if len(sum) == 0 {
             t.Errorf("fail zero")
         }
     }
+
+    // =======
+
+    {
+        sum := SumSH512([]byte(msg))
+        if len(sum) == 0 {
+            t.Errorf("fail zero")
+        }
+    }
+    {
+        sum := SumSH256([]byte(msg))
+        if len(sum) == 0 {
+            t.Errorf("fail zero")
+        }
+    }
+    {
+        sum := SumSH224([]byte(msg))
+        if len(sum) == 0 {
+            t.Errorf("fail zero")
+        }
+    }
+    {
+        sum := SumSH192([]byte(msg))
+        if len(sum) == 0 {
+            t.Errorf("fail zero")
+        }
+    }
+
+}
+
+func Test_NewSH256(t *testing.T) {
+    msg := "78AECC1F4DBF27AC146780EEA8DCC56B"
+    check := "df8c13ad710ba02a0a293b94e144d3b212bbf37cbf51c17e0716f65126a23621"
+
+    c := NewSH256()
+    c.Write([]byte(msg))
+    dst := c.Sum(nil)
+
+    if fmt.Sprintf("%x", dst) != check {
+        t.Errorf("fail, got %x, want %s", dst, check)
+    }
+
 }
 
 func BenchmarkSum(b *testing.B) {
     var buf [1 << 20]byte
-    c := New()
+    c := NewHS512()
     for i := 0; i < b.N; i++ {
         c.Reset()
         c.Write(buf[:])
