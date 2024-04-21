@@ -80,7 +80,7 @@ func (d *digest) Sum(in []byte) []byte {
 
 func (d *digest) checkSum() (out [Size]byte) {
     sum := d.Sum64()
-    putu64(out[:], sum)
+    putu64be(out[:], sum)
 
     return
 }

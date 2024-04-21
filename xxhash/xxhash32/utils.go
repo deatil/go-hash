@@ -24,6 +24,10 @@ func putu32(ptr []byte, a uint32) {
     }
 }
 
+func putu32be(ptr []byte, a uint32) {
+    binary.BigEndian.PutUint32(ptr, a)
+}
+
 func bytesToUint32s(b []byte) []uint32 {
     size := len(b) / 4
     dst := make([]uint32, size)

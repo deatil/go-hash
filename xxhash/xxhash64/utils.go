@@ -8,6 +8,14 @@ import (
 // Endianness option
 const littleEndian bool = true
 
+func getu32(ptr []byte) uint32 {
+    if littleEndian {
+        return binary.LittleEndian.Uint32(ptr)
+    } else {
+        return binary.BigEndian.Uint32(ptr)
+    }
+}
+
 func getu64(ptr []byte) uint64 {
     if littleEndian {
         return binary.LittleEndian.Uint64(ptr)
@@ -24,12 +32,8 @@ func putu64(ptr []byte, a uint64) {
     }
 }
 
-func getu32(ptr []byte) uint32 {
-    if littleEndian {
-        return binary.LittleEndian.Uint32(ptr)
-    } else {
-        return binary.BigEndian.Uint32(ptr)
-    }
+func putu64be(ptr []byte, a uint64) {
+    binary.BigEndian.PutUint64(ptr, a)
 }
 
 func bytesToUint64s(b []byte) []uint64 {
