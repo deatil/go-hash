@@ -1046,10 +1046,10 @@ var vecs64 = [...]uint64{
     0x1b1718f8fad644f7,
     0x369150a72125bf52,
     0xc18ffa21d89c72fb,
-    0xc402fa13a388725,
+    0x0c402fa13a388725,
 }
 
-func Test_XXH3_64(t *testing.T) {
+func test_XXH3_64(t *testing.T) {
     var data []byte
 
     for i, want := range vecs64 {
@@ -1062,9 +1062,9 @@ func Test_XXH3_64(t *testing.T) {
 }
 
 var vecs128 = [...]string{
-    "db4b4a10990fbd75f320860b2ccba84c",
-    "9f5111d47b921b9bf60add6eecf0e425",
-    "3dcff677d8368d217fefaea155cac2e1",
+    "e651ca75082952cc14bf9dd9043e9ff9",
+    "165555094b7cbe4dc53d643361dd6cd0",
+    "19eafccc1f1170e843bbe8f6e5ad911c",
 }
 
 func Test_XXH3_128(t *testing.T) {
@@ -1076,5 +1076,27 @@ func Test_XXH3_128(t *testing.T) {
         if fmt.Sprintf("%x", got) != want {
             t.Errorf("[%d] got %x, want %s", i, got, want)
         }
+    }
+}
+
+func Test_Hash64(t *testing.T) {
+    in := []byte("nonce-asdfg56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f")
+    check := "3ddf6d234465a3df"
+
+    out := Sum64(in)
+
+    if fmt.Sprintf("%x", out) != check {
+        t.Errorf("Check error. got %x, want %s", out, check)
+    }
+}
+
+func Test_Hash128(t *testing.T) {
+    in := []byte("nonce-asdfg56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f")
+    check := "4559a89aaeab6e363ddf6d234465a3df"
+
+    out := Sum128(in)
+
+    if fmt.Sprintf("%x", out) != check {
+        t.Errorf("Check error. got %x, want %s", out, check)
     }
 }

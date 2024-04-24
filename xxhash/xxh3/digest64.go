@@ -9,38 +9,46 @@ const BlockSize64 = BLOCK_LEN
 // digest64 represents the partial evaluation of a checksum.
 type digest64 struct {
     s   [8]uint64
-    x   [BlockSize64]byte
+    x   []byte
     nx  int
     len uint64
 
     seed    uint64
-    kSecret []uint32
+    secret []byte
+
+    nbStripesSoFar int
 }
 
 // newDigest64 returns a new *digest64 computing the checksum
 func newDigest64(seed uint64, secret []byte) *digest64 {
     d := new(digest64)
     d.seed = seed
-    d.kSecret = bytesToKeys(secret)
+
+    d.secret = make([]byte, len(secret))
+    copy(d.secret, secret)
+
     d.Reset()
 
     return d
 }
 
 func (d *digest64) Reset() {
+    blockSize := d.BlockSize()
+
     d.s = [8]uint64{
-        d.seed,
-        PRIME64_1,
-        PRIME64_2,
-        PRIME64_3,
-        PRIME64_4,
-        PRIME64_5,
-        -d.seed,
-        0,
+        PRIME32_3, PRIME64_1,
+        PRIME64_2, PRIME64_3,
+        PRIME64_4, PRIME32_2,
+        PRIME64_5, PRIME32_1,
     }
-    d.x = [BlockSize64]byte{}
+
+    // buffer
+    d.x = make([]byte, blockSize)
+    // bufferedSize
     d.nx = 0
     d.len = 0
+
+    d.nbStripesSoFar = 0
 }
 
 func (d *digest64) Size() int {
@@ -48,22 +56,28 @@ func (d *digest64) Size() int {
 }
 
 func (d *digest64) BlockSize() int {
-    return BlockSize64
+    // 1024
+    nbStripesPerBlock := (len(d.secret) - STRIPE_LEN) / SECRET_CONSUME_RATE
+    block_len := STRIPE_LEN * nbStripesPerBlock
+
+    return block_len
 }
 
 func (d *digest64) Write(p []byte) (nn int, err error) {
     nn = len(p)
     d.len += uint64(nn)
 
+    blockSize := d.BlockSize()
+
     var xx int
 
     plen := len(p)
-    for d.nx + plen >= BlockSize64 {
+    for d.nx + plen >= blockSize {
         copy(d.x[d.nx:], p)
 
         d.compress(d.x[:])
 
-        xx = BlockSize64 - d.nx
+        xx = blockSize - d.nx
         plen -= xx
 
         p = p[xx:]
@@ -91,60 +105,45 @@ func (d *digest64) checkSum() (out [Size64]byte) {
 }
 
 func (d *digest64) Sum64() uint64 {
-    p := d.x[:]
-    key := d.kSecret
+    secret := d.secret
     seed := d.seed
 
     if d.len <= 16 {
-        return len_0to16_64b(d.x[:d.nx], key, seed)
+        return len_0to16_64b(d.x[:d.nx], secret, seed)
+    } else if d.len <= 128 {
+        return len_17to128_64b(d.x[:d.nx], secret, seed)
+    } else if d.len <= XXH3_MIDSIZE_MAX {
+        return len_129to240_64b(d.x[:d.nx], secret, seed)
     }
 
-    acc := PRIME64_1 * (d.len + seed)
-    len := d.len
-    if len > 32 {
-        if len > 64 {
-            if len > 96 {
-                if len > 128 {
-                    return d.hashLong(d.x[:d.nx], seed)
-                }
-
-                acc += mix16B(p[48:], key[96/4:])
-                acc += mix16B(p[len-64:], key[112/4:])
-            }
-
-            acc += mix16B(p[32:], key[64/4:])
-            acc += mix16B(p[len-48:], key[80/4:])
-        }
-
-        acc += mix16B(p[16:], key[32/4:])
-        acc += mix16B(p[len-32:], key[48/4:])
-
-    }
-
-    acc += mix16B(p[0:], key[0:])
-    acc += mix16B(p[len-16:], key[4:])
-
-    return avalanche(acc)
+    return d.hashLong(d.x[:d.nx], seed)
 }
 
 func (d *digest64) hashLong(data []byte, seed uint64) uint64 {
+    secret := d.secret
+
+    block_len := d.BlockSize()
+    nb_blocks := int((d.len - 1) / uint64(block_len))
+
     // last partial block
-    nbStripes := (int(d.len) % BLOCK_LEN) / STRIPE_LEN
-    accumulate(d.s[:], d.x[:d.nx], d.kSecret[:], nbStripes)
+    nbStripes := (int(d.len - 1) - (block_len * nb_blocks)) / STRIPE_LEN
+    accumulate(d.s[:], d.x[:d.nx], secret, nbStripes)
 
     // last stripe
     if (len(data) & (STRIPE_LEN - 1)) != 0 {
         p := data[len(data)-STRIPE_LEN:]
-        accumulate_512(d.s[:], p, d.kSecret[nbStripes*2:])
+        accumulate_512(d.s[:], p, secret[len(secret) - STRIPE_LEN - SECRET_LASTACC_START:])
     }
 
     // converge into final hash
-    return mergeAccs(d.s[:], d.kSecret, d.len * PRIME64_1)
+    return mergeAccs(d.s[:], secret[SECRET_MERGEACCS_START:], d.len * PRIME64_1)
 }
 
 func (d *digest64) compress(data []byte) {
-    accumulate_full(d.s[:], data, d.kSecret[:], NB_KEYS)
-    scrambleAcc(d.s[:], d.kSecret[KEYSET_DEFAULT_SIZE-STRIPE_ELTS:])
+    nbStripesPerBlock := (len(d.secret) - STRIPE_ELTS) / SECRET_CONSUME_RATE
+
+    accumulate(d.s[:], data, d.secret, nbStripesPerBlock)
+    scrambleAcc(d.s[:], d.secret[len(d.secret)-STRIPE_LEN:])
 }
 
 // checksum64 returns the 64bits Hash value.

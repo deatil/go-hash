@@ -22,18 +22,16 @@ func New128WithSecretandSeed(secret []byte, seed uint64) Hash128 {
 
 // Checksum returns the 128bits Hash value.
 func Sum128(input []byte) (out [Size128]byte) {
-    sum := checksum128(input, 0, kSecret)
-    putu64be(out[:], sum.low64)
-    putu64be(out[Size128/2:], sum.high64)
+    sum := checksum128(input, 0, kSecret).Bytes()
 
+    copy(out[:], sum[:])
     return
 }
 
 // Checksum returns the 128bits Hash value.
 func Sum128WithSeed(input []byte, seed uint64) (out [Size128]byte) {
-    sum := checksum128(input, seed, kSecret)
-    putu64be(out[:], sum.low64)
-    putu64be(out[Size128/2:], sum.high64)
+    sum := checksum128(input, seed, kSecret).Bytes()
 
+    copy(out[:], sum[:])
     return
 }
