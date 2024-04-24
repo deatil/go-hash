@@ -578,6 +578,48 @@ func mergeAccs_128b(
 
 // =============
 
+func GenCustomSecret(customSecret []byte, seed64 uint64) {
+    kSecretPtr := kSecret
+    nbRounds := SECRET_DEFAULT_SIZE / 16
+
+    var i int
+    for i = 0; i < nbRounds; i++ {
+        lo := getu64(kSecretPtr[16*i:])     + seed64
+        hi := getu64(kSecretPtr[16*i + 8:]) - seed64
+
+        putu64(customSecret[16*i:],     lo)
+        putu64(customSecret[16*i + 8:], hi)
+    }
+}
+
+func hashLong_internal_loop(
+    acc    []uint64,
+    input  []byte,
+    secret []byte,
+) {
+    secretSize := len(secret)
+    length := len(input)
+
+    nbStripesPerBlock := (secretSize - STRIPE_LEN) / SECRET_CONSUME_RATE
+    block_len := STRIPE_LEN * nbStripesPerBlock
+    nb_blocks := (length - 1) / block_len
+
+    for n := 0; n < nb_blocks; n++ {
+        accumulate(acc, input[n*block_len:], secret, nbStripesPerBlock)
+        scrambleAcc(acc, secret[secretSize - STRIPE_LEN:])
+    }
+
+    /* last partial block */
+    nbStripes := ((length - 1) - (block_len * nb_blocks)) / STRIPE_LEN
+    accumulate(acc, input[nb_blocks*block_len:], secret, nbStripes)
+
+    /* last stripe */
+    if (length & (STRIPE_LEN - 1)) != 0 {
+        p := input[length - STRIPE_LEN:]
+        accumulate_512(acc, p, secret[secretSize - STRIPE_LEN - SECRET_LASTACC_START:])
+    }
+}
+
 func consumeStripes(
     acc []uint64,
     nbStripesSoFarPtr *int,
@@ -587,7 +629,7 @@ func consumeStripes(
     secret []byte,
     secretLimit int,
 ) []byte {
-    var initialSecret []byte = secret[*nbStripesSoFarPtr * SECRET_CONSUME_RATE:]
+    initialSecret := secret[*nbStripesSoFarPtr * SECRET_CONSUME_RATE:]
 
     /* Process full blocks */
     if nbStripes >= (nbStripesPerBlock - *nbStripesSoFarPtr) {
@@ -619,4 +661,197 @@ func consumeStripes(
 
     /* Return end pointer */
     return input
+}
+
+// =============
+
+func Hash_hashLong_64bits_internal(
+    acc    []uint64,
+    input  []byte,
+    secret []byte,
+) uint64 {
+    len := len(input)
+
+    hashLong_internal_loop(acc, input, secret)
+
+    return mergeAccs(acc, secret[SECRET_MERGEACCS_START:], uint64(len) * PRIME64_1)
+}
+
+func Hash_hashLong_64b_withSecret(
+    input  []byte,
+    seed64 uint64,
+    secret []byte,
+) uint64 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    return Hash_hashLong_64bits_internal(acc, input, secret)
+}
+
+func Hash_64bits_internal(
+    acc    []uint64,
+    input  []byte,
+    seed64 uint64,
+    secret []byte,
+) uint64 {
+    len := len(input)
+
+    if len <= 16 {
+        return len_0to16_64b(input, secret, seed64)
+    }
+
+    if len <= 128 {
+        return len_17to128_64b(input, secret, seed64)
+    }
+
+    if len <= MIDSIZE_MAX {
+        return len_129to240_64b(input, secret, seed64)
+    }
+
+    return Hash_hashLong_64bits_internal(acc, input, secret)
+}
+
+func Hash_64bits(input []byte) uint64 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    return Hash_64bits_internal(acc, input, 0, kSecret)
+}
+
+func Hash_64bits_withSecret(input []byte, secret []byte) uint64 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    return Hash_64bits_internal(acc, input, 0, secret)
+}
+
+func Hash_64bits_withSeed(input []byte, seed uint64) uint64 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    return Hash_64bits_internal(acc, input, seed, kSecret)
+}
+
+func Hash_64bits_withSecretandSeed(
+    input  []byte,
+    secret []byte,
+    seed   uint64,
+) uint64 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    length := len(input)
+    if length <= MIDSIZE_MAX {
+        return Hash_64bits_internal(acc, input, seed, kSecret)
+    }
+
+    return Hash_hashLong_64b_withSecret(input, seed, secret)
+}
+
+// =============
+
+func Hash_hashLong_128b_internal(
+    acc    []uint64,
+    input  []byte,
+    secret []byte,
+) Uint128 {
+    hashLong_internal_loop(acc, input, secret)
+
+    return mergeAccs_128b(acc, secret, uint64(len(input)))
+}
+
+func Hash_hashLong_128b_default(
+    input  []byte,
+    seed64 uint64,
+    secret []byte,
+) Uint128 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    return Hash_hashLong_128b_internal(acc, input, kSecret)
+}
+
+func Hash_hashLong_128b_withSecret(
+    input  []byte,
+    seed64 uint64,
+    secret []byte,
+) Uint128 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    return Hash_hashLong_128b_internal(acc, input, secret)
+}
+
+func Hash_hashLong_128b_withSeed_internal(
+    acc    []uint64,
+    input  []byte,
+    seed64 uint64,
+) Uint128 {
+    if seed64 == 0 {
+        return Hash_hashLong_128b_internal(acc, input, kSecret)
+    }
+
+    var secret [SECRET_DEFAULT_SIZE]byte
+    GenCustomSecret(secret[:], seed64)
+
+    return Hash_hashLong_128b_internal(acc, input, secret[:])
+}
+
+func Hash_hashLong_128b_withSeed(
+    input  []byte,
+    seed64 uint64,
+    secret []byte,
+) Uint128 {
+    acc := make([]uint64, 8)
+    copy(acc, INIT_ACC)
+
+    return Hash_hashLong_128b_withSeed_internal(acc, input, seed64)
+}
+
+type hashLong128_f func([]byte, uint64, []byte) Uint128
+
+func Hash_128bits_internal(
+    input  []byte,
+    seed64 uint64,
+    secret []byte,
+    f_hl128 hashLong128_f,
+) Uint128 {
+    len := len(input)
+
+    if len <= 16 {
+        return len_0to16_128b(input, secret, seed64)
+    }
+    if len <= 128 {
+        return len_17to128_128b(input, secret, seed64)
+    }
+    if len <= MIDSIZE_MAX {
+        return len_129to240_128b(input, secret, seed64)
+    }
+
+    return f_hl128(input, seed64, secret)
+}
+
+func Hash_128bits(input []byte) Uint128 {
+    return Hash_128bits_internal(input, 0, kSecret, Hash_hashLong_128b_default)
+}
+
+func Hash_128bits_withSecret(input []byte, secret []byte) Uint128 {
+    return Hash_128bits_internal(input, 0, secret, Hash_hashLong_128b_withSecret)
+}
+
+func Hash_128bits_withSeed(input []byte, seed uint64) Uint128 {
+    return Hash_128bits_internal(input, seed, kSecret, Hash_hashLong_128b_withSeed)
+}
+
+func Hash_128bits_withSecretandSeed(
+    input  []byte,
+    secret []byte,
+    seed   uint64,
+) Uint128 {
+    len := len(input)
+    if len <= MIDSIZE_MAX {
+        return Hash_128bits_internal(input, seed, kSecret, nil)
+    }
+
+    return Hash_hashLong_128b_withSecret(input, seed, secret)
 }
