@@ -43,11 +43,7 @@ const SECRET_DEFAULT_SIZE = 192
 const SECRET_CONSUME_RATE = 8
 
 const STRIPE_LEN  = 64
-const STRIPE_ELTS = STRIPE_LEN / 4 // 16 = unsafe.Sizeof(uint32)
 const ACC_NB      = STRIPE_LEN / 8 // 8  = unsafe.Sizeof(uint64)
-
-const NB_KEYS   = ((KEYSET_DEFAULT_SIZE - STRIPE_ELTS) / 2) // 16
-const BLOCK_LEN = STRIPE_LEN * NB_KEYS // 1024
 
 const SECRET_SIZE_MIN = 136
 

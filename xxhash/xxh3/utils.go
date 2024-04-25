@@ -624,43 +624,26 @@ func consumeStripes(
     acc []uint64,
     nbStripesSoFarPtr *int,
     nbStripesPerBlock int,
-    input []byte,
-    nbStripes int,
+    p []byte,
+    stripes int,
     secret []byte,
     secretLimit int,
-) []byte {
-    initialSecret := secret[*nbStripesSoFarPtr * SECRET_CONSUME_RATE:]
+) {
+    stripesSoFar := *nbStripesSoFarPtr
+    if nbStripesPerBlock - stripesSoFar <= stripes {
+        var stripesToEndOfBlock = nbStripesPerBlock - stripesSoFar
+        var stripesAfterBlock   = stripes - stripesToEndOfBlock
 
-    /* Process full blocks */
-    if nbStripes >= (nbStripesPerBlock - *nbStripesSoFarPtr) {
-        /* Process the initial partial block... */
-        nbStripesThisIter := nbStripesPerBlock - *nbStripesSoFarPtr
+        accumulate(acc, p, secret[stripesSoFar*SECRET_CONSUME_RATE:], stripesToEndOfBlock)
+        scrambleAcc(acc, secret[secretLimit:])
+        accumulate(acc, p[stripesToEndOfBlock*STRIPE_LEN:], secret, stripesAfterBlock)
 
-        for nbStripes >= nbStripesPerBlock {
-            /* Accumulate and scramble */
-            accumulate(acc, input, initialSecret, nbStripesThisIter)
-            scrambleAcc(acc, secret[secretLimit:])
+        *nbStripesSoFarPtr = stripesAfterBlock
+    } else {
+        accumulate(acc, p, secret[stripesSoFar*SECRET_CONSUME_RATE:], stripes)
 
-            input = input[nbStripesThisIter * STRIPE_LEN:]
-            nbStripes -= nbStripesThisIter
-
-            /* Then continue the loop with the full block size */
-            nbStripesThisIter = nbStripesPerBlock
-            initialSecret = secret
-        }
-
-        *nbStripesSoFarPtr = 0
+        *nbStripesSoFarPtr += stripes
     }
-
-    /* Process a partial block */
-    if nbStripes > 0 {
-        accumulate(acc, input, initialSecret, nbStripes)
-        input = input[nbStripes * STRIPE_LEN:]
-        *nbStripesSoFarPtr += nbStripes
-    }
-
-    /* Return end pointer */
-    return input
 }
 
 // =============

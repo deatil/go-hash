@@ -3,7 +3,19 @@ package xxh3
 import (
     "fmt"
     "testing"
+    "io/ioutil"
 )
+
+func testMustReadFile(tb testing.TB, filename string) []byte {
+    tb.Helper()
+
+    b, err := ioutil.ReadFile(filename)
+    if err != nil {
+        tb.Fatal(err)
+    }
+
+    return b
+}
 
 func fillTestBuffer(l int) []byte {
     const PRIME32 = 2654435761
@@ -42,10 +54,22 @@ func Test_Hash64(t *testing.T) {
     in := []byte("nonce-asdfg56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f")
     check := "3ddf6d234465a3df"
 
-    out := Hash_64bits(in)
+    {
+        out := Sum64(in)
 
-    if fmt.Sprintf("%x", out) != check {
-        t.Errorf("Check error. got %x, want %s", out, check)
+        if fmt.Sprintf("%x", out) != check {
+            t.Errorf("Check error. got %x, want %s", out, check)
+        }
+    }
+
+    // ==========
+
+    {
+        out := Hash_64bits(in)
+
+        if fmt.Sprintf("%x", out) != check {
+            t.Errorf("Check error. got %x, want %s", out, check)
+        }
     }
 }
 
@@ -53,9 +77,70 @@ func Test_Hash128(t *testing.T) {
     in := []byte("nonce-asdfg56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f56d6dd148d3df5947b54f0a0fb5e5b0234680cd7b4614bf3005c86fffb45257419b3133c39e551347cd3ad26850bd9513877ee2b708829f3f8f902377720655f")
     check := "4559a89aaeab6e363ddf6d234465a3df"
 
-    out := Hash_128bits(in).Bytes()
+    {
+        out := Sum128(in)
 
-    if fmt.Sprintf("%x", out) != check {
-        t.Errorf("Check error. got %x, want %s", out, check)
+        if fmt.Sprintf("%x", out) != check {
+            t.Errorf("Check error. got %x, want %s", out, check)
+        }
+    }
+
+    // ===========
+
+    {
+        out := Hash_128bits(in).Bytes()
+
+        if fmt.Sprintf("%x", out) != check {
+            t.Errorf("Check error. got %x, want %s", out, check)
+        }
+    }
+}
+
+type testHash128Data struct {
+    msg []byte
+    md  string
+}
+
+func Test_Hash128_Check(t *testing.T) {
+    tests := []testHash128Data{
+        {
+            msg: []byte("Hello World !"),
+            md: "8c52e3056b8541c2780aae38ba5d77fa",
+        },
+        {
+            msg: []byte("The quick brown fox jumps over the lazy dog"),
+            md: "ddd650205ca3e7fa24a1cc2e3a8a7651",
+        },
+        {
+            msg: testMustReadFile(t, "testdata/Square Polano.txt"),
+            md: "eb22f44e32ac3f14c437688e07426857",
+        },
+        {
+            msg: testMustReadFile(t, "testdata/The Three-Cornered World.txt"),
+            md: "9ca1941dfdfd1dd72f81241fcb240c15",
+        },
+    }
+
+    md := New128()
+
+    for i, td := range tests {
+        {
+            out := Sum128(td.msg)
+            if fmt.Sprintf("%x", out) != td.md {
+                t.Errorf("[%d] Check error. got %x, want %s", i, out, td.md)
+            }
+        }
+
+        // new use
+        {
+            md.Reset()
+            md.Write(td.msg)
+            out := md.Sum(nil)
+
+            if fmt.Sprintf("%x", out) != td.md {
+                t.Errorf("[%d] New128 Check error. got %x, want %s", i, out, td.md)
+            }
+        }
+
     }
 }

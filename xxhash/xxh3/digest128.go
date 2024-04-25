@@ -4,7 +4,7 @@ package xxh3
 const Size128 = 16
 
 // The blocksize of xxh3_128 hash function in bytes
-const BlockSize128 = INTERNALBUFFER_SIZE
+const BlockSize128 = 256
 
 // digest128 represents the partial evaluation of a checksum.
 type digest128 struct {
@@ -43,14 +43,14 @@ func (d *digest128) Reset() {
     }
 
     // buffer
-    d.x = [BlockSize64]byte{}
+    d.x = [BlockSize128]byte{}
     // bufferedSize
     d.nx = 0
     d.len = 0
 
     d.secretLimit = len(d.secret) - STRIPE_LEN
     d.nbStripesSoFar = 0
-    d.nbStripesPerBlock = (len(d.secret) - STRIPE_ELTS) / SECRET_CONSUME_RATE
+    d.nbStripesPerBlock = d.secretLimit / SECRET_CONSUME_RATE
 }
 
 func (d *digest128) Size() int {
@@ -69,17 +69,20 @@ func (d *digest128) Write(p []byte) (nn int, err error) {
         return
     }
 
+    pp := p
     secret := d.secret
     acc := d.s[:]
 
-    if len(p) <= BlockSize64 - d.nx {
+    const stripes = INTERNALBUFFER_STRIPES
+
+    if len(p) <= BlockSize128 - d.nx {
         copy(d.x[d.nx:], p)
         d.nx += len(p)
         return
     }
 
     if d.nx > 0 {
-        loadSize := BlockSize64 - d.nx
+        loadSize := BlockSize128 - d.nx
         copy(d.x[d.nx:], p[:loadSize])
 
         p = p[loadSize:]
@@ -89,7 +92,7 @@ func (d *digest128) Write(p []byte) (nn int, err error) {
             &d.nbStripesSoFar,
             d.nbStripesPerBlock,
             d.x[:],
-            INTERNALBUFFER_STRIPES,
+            stripes,
             secret,
             d.secretLimit,
         )
@@ -97,28 +100,27 @@ func (d *digest128) Write(p []byte) (nn int, err error) {
         d.nx = 0
     }
 
-    if len(p) > BlockSize64 {
-        nbStripes := (len(p) - 1) / STRIPE_LEN
+    if len(p) >= BlockSize128 {
+        for len(p) - BlockSize128 > 0 {
+            consumeStripes(
+                acc,
+                &d.nbStripesSoFar,
+                d.nbStripesPerBlock,
+                p,
+                stripes,
+                secret,
+                d.secretLimit,
+            )
 
-        p = consumeStripes(
-            acc,
-            &d.nbStripesSoFar,
-            d.nbStripesPerBlock,
-            p,
-            nbStripes,
-            secret,
-            d.secretLimit,
-        )
-
-        if len(p) >= STRIPE_LEN {
-            copy(d.x[len(d.x)-STRIPE_LEN:], p[len(p)-STRIPE_LEN:])
+            p = p[BlockSize128:]
         }
+
+        // for last partial stripe
+        offset := len(pp) - len(p)
+        copy(d.x[len(d.x)-STRIPE_LEN:], pp[offset-STRIPE_LEN:])
     }
 
-    copy(d.x[:], p)
-    d.nx = len(p)
-
-    copy(d.s[:], acc)
+    d.nx = copy(d.x[:], p)
 
     return
 }
@@ -152,7 +154,7 @@ func (d *digest128) Sum128() Uint128 {
         return Hash_128bits_withSeed(d.x[:d.nx], d.seed)
     }
 
-    return Hash_128bits_withSecret(d.x[:d.nx], secret[d.secretLimit + STRIPE_LEN:])
+    return Hash_128bits_withSecret(d.x[:d.nx], secret[:d.secretLimit + STRIPE_LEN])
 }
 
 func (d *digest128) hashLong(acc []uint64, secret []byte) {
@@ -176,7 +178,7 @@ func (d *digest128) hashLong(acc []uint64, secret []byte) {
             d.secretLimit,
         )
 
-        lastStripePtr = d.x[d.nx - STRIPE_LEN:]
+        lastStripePtr = d.x[d.nx - STRIPE_LEN:d.nx]
     } else {
         catchupSize := STRIPE_LEN - d.nx
 
@@ -190,15 +192,8 @@ func (d *digest128) hashLong(acc []uint64, secret []byte) {
     accumulate_512(
         acc,
         lastStripePtr,
-        secret[:d.secretLimit - SECRET_LASTACC_START],
+        secret[d.secretLimit - SECRET_LASTACC_START:],
     )
-}
-
-func (d *digest128) compress(data []byte) {
-    nbStripesPerBlock := (len(d.secret) - STRIPE_ELTS) / SECRET_CONSUME_RATE
-
-    accumulate(d.s[:], data, d.secret, nbStripesPerBlock)
-    scrambleAcc(d.s[:], d.secret[len(d.secret)-STRIPE_LEN:])
 }
 
 // checksum128 returns the 64bits Hash value.
