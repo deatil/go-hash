@@ -1,4 +1,4 @@
-package blake256
+package blake512
 
 import (
     "math/bits"
@@ -7,6 +7,30 @@ import (
 
 // Endianness option
 const littleEndian bool = false
+
+func getu32(ptr []byte) uint32 {
+    if littleEndian {
+        return binary.LittleEndian.Uint32(ptr)
+    } else {
+        return binary.BigEndian.Uint32(ptr)
+    }
+}
+
+func putu32(ptr []byte, a uint32) {
+    if littleEndian {
+        binary.LittleEndian.PutUint32(ptr, a)
+    } else {
+        binary.BigEndian.PutUint32(ptr, a)
+    }
+}
+
+func getu64(ptr []byte) uint64 {
+    if littleEndian {
+        return binary.LittleEndian.Uint64(ptr)
+    } else {
+        return binary.BigEndian.Uint64(ptr)
+    }
+}
 
 func putu64(ptr []byte, a uint64) {
     if littleEndian {
@@ -50,17 +74,23 @@ func uint32sToBytes(w []uint32) []byte {
     return dst
 }
 
-func rotr(x uint32, n int) uint32 {
-    return bits.RotateLeft32(x, 32 - n)
+func bytesToUint64s(b []byte) []uint64 {
+    size := len(b) / 8
+    dst := make([]uint64, size)
+
+    for i := 0; i < size; i++ {
+        j := i * 8
+
+        if littleEndian {
+            dst[i] = binary.LittleEndian.Uint64(b[j:])
+        } else {
+            dst[i] = binary.BigEndian.Uint64(b[j:])
+        }
+    }
+
+    return dst
 }
 
-func G(v *[16]uint32, m []uint32, i int, a, b, c, d, e int) {
-    v[a] += (m[sigma[i][e]] ^ u256[sigma[i][e+1]]) + v[b]
-    v[d] = rotr(v[d] ^ v[a], 16)
-    v[c] += v[d]
-    v[b] = rotr(v[b] ^ v[c], 12)
-    v[a] += (m[sigma[i][e+1]] ^ u256[sigma[i][e]])+v[b]
-    v[d] = rotr(v[d] ^ v[a], 8)
-    v[c] += v[d]
-    v[b] = rotr(v[b] ^ v[c], 7)
+func circularRight(x uint64, n int) uint64 {
+    return bits.RotateLeft64(x, 64 - n)
 }

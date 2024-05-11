@@ -12,7 +12,7 @@ type digest struct {
     nx  int
     len uint64
 
-    buffer [256]uint32
+    buffer    [256]uint32
     bufferPtr uint32
 }
 
