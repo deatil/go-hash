@@ -24,13 +24,8 @@ type digest struct {
     salt [2]uint64
 }
 
-// New returns a new hash.Hash computing the echo checksum
-func New(hs int) (hash.Hash, error) {
-    return NewWithSalt(hs, nil)
-}
-
-// New returns a new hash.Hash computing the echo checksum
-func NewWithSalt(hashsize int, salt []byte) (hash.Hash, error) {
+// newDigest returns a new hash.Hash computing the echo checksum
+func newDigest(hashsize int, salt []byte) (hash.Hash, error) {
     if hashsize == 0 {
         return nil, errors.New("go-hash/echo: hash size can't be zero")
     }
