@@ -120,14 +120,21 @@ func (d *digest) Write(data []byte) (nn int, err error) {
 
     databitlen := uint(8 * len(data))
 
+    return d.write(data, databitlen)
+}
+
+func (d *digest) write(data []byte, databitlen uint) (nn int, err error) {
     var tmp,i int
     var remaining byte
 
     /* we check if this Update will fill one buffer */
     if databitlen + d.count < d.inputsize {
         /* we simply need to copy data to the buffer. Either it is aligned or not. */
-        if((d.count & 7) == 0) {
-            copy(d.buffer[d.count>>3:], data[:((databitlen-1)>>3) + 1])
+        if (d.count & 7) == 0 {
+            if databitlen > 0 {
+                copy(d.buffer[d.count>>3:], data[:((databitlen-1)>>3) + 1])
+            }
+
             d.databitlen += uint64(databitlen)
             d.count += databitlen
             return nn, nil
@@ -152,7 +159,7 @@ func (d *digest) Write(data []byte) (nn int, err error) {
             d.count += uint(tmp)
             d.performHash()
 
-            return d.Write(data[tmp>>3:tmp>>3+(int(databitlen)-tmp) >>3])
+            return d.write(data[tmp>>3:], uint(int(databitlen)-tmp))
         } else {
             /* tmp contains the number of bits we have to read to fill up the buffer */
             tmp = int(d.inputsize - d.count)
@@ -176,21 +183,14 @@ func (d *digest) Write(data []byte) (nn int, err error) {
                 if int(databitlen) > (((tmp>>3)+1)<<3) {
                     /* we first re-input the remaining bits in data[tmp>>3] then perform the recursive call */
                     remaining = byte(uint(data[tmp>>3]) << (tmp&7))
+                    d.write([]byte{remaining}, uint(8-(tmp&7)))
 
-                    remainings := make([]byte, 8-(tmp&7))
-                    copy(remainings, []byte{remaining})
-
-                    d.Write(remainings)
-
-                    return d.Write(data[tmp>>3:tmp>>3+(int(databitlen)-(((tmp>>3)+1)<<3))/8])
+                    return d.write(data[tmp>>3:], uint(int(databitlen)-(((tmp>>3)+1)<<3)))
                 } else {
                     /* we simply input the remaining bits of data[tmp>>3] */
                     remaining = byte(uint(data[tmp>>3]) << (tmp&7))
 
-                    remainings := make([]byte, int(databitlen) - tmp)
-                    copy(remainings, []byte{remaining})
-
-                    return d.Write(remainings)
+                    return d.write([]byte{remaining}, databitlen - uint(tmp))
                 }
             } else {
                 return nn, nil
@@ -218,27 +218,24 @@ func (d *digest) checkSum() []byte {
   if d.count+65 > d.inputsize {
     padding = bytes.Repeat([]byte{byte(1)}, int(d.inputsize>>3))
     padding[0] = 1<<7
-    d.Write(padding[:d.inputsize-d.count])
+    d.write(padding, d.inputsize-d.count)
 
     padding[0] = 0
     for i=0; i<8; i++ {
       padding[int(d.inputsize>>3)-1-i] = byte(databitlen>>(8*i))
     }
 
-    d.Write(padding[:d.inputsize])
+    d.write(padding, d.inputsize)
   } else {
     padding = bytes.Repeat([]byte{byte(1)}, int((d.inputsize-d.count)>>3)+1)
     padding[0] = 1<<7;
-    d.Write(padding[:(d.inputsize-d.count-64) >> 3])
+    d.write(padding, d.inputsize-d.count-64)
 
     for i=0; i<8; i++ {
       padding[7-i] = byte(databitlen>>(8*i))
     }
 
-    paddings := make([]byte, 64)
-    copy(paddings[:], padding)
-
-    d.Write(paddings)
+    d.write(padding, 64)
   }
 
   /* The final round of FSB is finished, now we simply apply the final transform: Whirlpool */
