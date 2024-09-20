@@ -1,7 +1,6 @@
 package echo
 
 import (
-    "hash"
     "errors"
 )
 
@@ -24,8 +23,8 @@ type digest struct {
     salt [2]uint64
 }
 
-// newDigest returns a new hash.Hash computing the echo checksum
-func newDigest(hashsize int, salt []byte) (hash.Hash, error) {
+// newDigest returns a new *digest computing the echo checksum
+func newDigest(hashsize int, salt []byte) (*digest, error) {
     if hashsize == 0 {
         return nil, errors.New("go-hash/echo: hash size can't be zero")
     }

@@ -6,6 +6,7 @@ import (
 
 const (
     // hash size
+    Size160 = 20
     Size224 = 28
     Size256 = 32
     Size384 = 48
@@ -28,6 +29,24 @@ func Sum(data []byte, hashbitlen int) (sum []byte, err error) {
     hashed := h.Sum(nil)
 
     return hashed, nil
+}
+
+// ===========
+
+// New160 returns a new hash.Hash computing the FSB checksum
+func New160() hash.Hash {
+    h, _ := New(160)
+    return h
+}
+
+// Sum160 returns the FSB-160 checksum of the data.
+func Sum160(data []byte) (sum160 [Size160]byte) {
+    h := New160()
+    h.Write(data)
+    sum := h.Sum(nil)
+
+    copy(sum160[:], sum[:Size160])
+    return
 }
 
 // ===========
