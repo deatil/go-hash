@@ -37,7 +37,7 @@ func createOneBlockBy8() []byte {
 	return p1[:]
 }
 
-func createTwoBlocksBy8() [8]*[]byte {
+func createTwoBlocksBy8() []byte {
 	var p1 [128]byte
 	p1[0] = 0x61
 	p1[1] = 0x62
