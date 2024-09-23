@@ -31,16 +31,16 @@ GLOBL r08_mask<>(SB), 8, $16
 // SSE2/MMX instructions:
 //	MOVOU r0, tmp2;
 //	PUNPCKHDQ r1, tmp2;
-//	PUNPCKLDQ	r1, r0; 
-//	MOVOU r2, tmp1; 
-//	PUNPCKLDQ r3, tmp1; 
-//	PUNPCKHDQ r3, r2; 
-//	MOVOU r0, r1; 
-//	PUNPCKHQDQ tmp1, r1; 
-//	PUNPCKLQDQ tmp1, r0; 
-//	MOVOU tmp2, r3; 
-//	PUNPCKHQDQ r2, r3; 
-//	PUNPCKLQDQ r2, tmp2; 
+//	PUNPCKLDQ	r1, r0;
+//	MOVOU r2, tmp1;
+//	PUNPCKLDQ r3, tmp1;
+//	PUNPCKHDQ r3, r2;
+//	MOVOU r0, r1;
+//	PUNPCKHQDQ tmp1, r1;
+//	PUNPCKLQDQ tmp1, r0;
+//	MOVOU tmp2, r3;
+//	PUNPCKHQDQ r2, r3;
+//	PUNPCKLQDQ r2, tmp2;
 //	MOVOU tmp2, r2
 #define SSE_TRANSPOSE_MATRIX(r0, r1, r2, r3, tmp1, tmp2) \
 	MOVOU r0, tmp2;      \
@@ -160,7 +160,7 @@ GLOBL r08_mask<>(SB), 8, $16
 #define ROUND_00_11(index, a, b, c, d, e, f, g, h) \
 	SSE_SS1SS2(index, a, e, tmp2, X12, X13); \
 	SSE_FF0(a, b, c, X14); \
-	PADDL d, X14; \ // (a XOR b XOR c) + d 
+	PADDL d, X14; \ // (a XOR b XOR c) + d
 	loadWord(X10, index); \
 	loadWord(X11, index+4); \
 	PXOR X10, X11; \ //Wt XOR Wt+4
@@ -226,7 +226,7 @@ GLOBL r08_mask<>(SB), 8, $16
 	VPUNPCKHDQ r1, r0, tmp2;                 \ // tmp2 =  tmp2 = [w07, w03, w06, w02]
 	VPUNPCKLDQ r1, r0, r0;                   \ // r0 =      r0 = [w05, w01, w04, w00]
 	VPUNPCKLDQ r3, r2, tmp1;                 \ // tmp1 =  tmp1 = [w13, w09, w12, w08]
-	VPUNPCKHDQ r3, r2, r2;                   \ // r2 =      r2 = [w15, w11, w14, w10] 
+	VPUNPCKHDQ r3, r2, r2;                   \ // r2 =      r2 = [w15, w11, w14, w10]
 	VPUNPCKHQDQ tmp1, r0, r1;                \ // r1 =      r1 = [w13, w09, w05, w01]
 	VPUNPCKLQDQ tmp1, r0, r0;                \ // r0 =      r0 = [w12, w08, w04, w00]
 	VPUNPCKHQDQ r2, tmp2, r3;                \ // r3 =      r3 = [w15, w11, w07, w03]
@@ -308,7 +308,7 @@ GLOBL r08_mask<>(SB), 8, $16
 // DST = (Y XOR Z) AND X XOR Z
 #define AVX_GG1(X, Y, Z, DST) \
 	VPXOR Y, Z, DST; \
-	VPAND X, DST, DST; \ 
+	VPAND X, DST, DST; \
 	VPXOR Z, DST, DST
 
 #define AVX_COPY_RESULT(b, d, f, h, TT1, TT2) \
@@ -324,7 +324,7 @@ GLOBL r08_mask<>(SB), 8, $16
 	AVX_SS1SS2(index, a, e, X12, X13); \
 	; \
 	AVX_FF0(a, b, c, X14); \
-	VPADDD d, X14, X14; \ // (a XOR b XOR c) + d 
+	VPADDD d, X14, X14; \ // (a XOR b XOR c) + d
 	avxLoadWord(X10, index); \
 	avxLoadWord(X11, index+4); \
 	VPXOR X10, X11, X11; \ //Wt XOR Wt+4
@@ -412,7 +412,7 @@ TEXT ·blockMultBy4(SB),NOSPLIT,$0
 	MOVQ 16(SI), R10
 	MOVQ 24(SI), R11
 
-loop:	
+loop:
 	// load message block
 	prepare4Words(0)
 	prepare4Words(1)
@@ -505,7 +505,7 @@ loop:
 
 	DECQ DX
 	JZ end
-	
+
 	storeState(BX)
 	LEAQ 64(R8), R8
 	LEAQ 64(R9), R9
@@ -692,7 +692,7 @@ TEXT ·copyResultsBy4(SB),NOSPLIT,$0
 	MOVOU (5*16)(DI), f
 	MOVOU (6*16)(DI), g
 	MOVOU (7*16)(DI), h
-	
+
 	SSE_REV32(a, b, c, d)
 	SSE_REV32(e, f, g, h)
 	storeState(SI)

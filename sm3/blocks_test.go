@@ -16,10 +16,10 @@ const preallocSizeBy4 = 1728
 func initState4() [4]*[8]uint32 {
 	d := new(digest)
 	d.Reset()
-	var dig1 = d.h
-	var dig2 = d.h
-	var dig3 = d.h
-	return [4]*[8]uint32{&d.h, &dig1, &dig2, &dig3}
+	var dig1 = d.s
+	var dig2 = d.s
+	var dig3 = d.s
+	return [4]*[8]uint32{&d.s, &dig1, &dig2, &dig3}
 }
 
 func createOneBlockBy4() [4]*byte {
