@@ -69,6 +69,7 @@ func TestTransposeMatrix8x8(t *testing.T) {
 	if !useAVX2 {
 		t.Skip("AVX2 is not supported")
 	}
+
 	var m [8][8]uint32
 	for i := 0; i < 8; i++ {
 		for j := 0; j < 8; j++ {
@@ -98,6 +99,7 @@ func TestBlockMultBy8(t *testing.T) {
 	if !useAVX2 {
 		t.Skip("AVX2 is not supported")
 	}
+
 	digs := initState8()
 	p := createOneBlockBy8()
 	buffer := make([]byte, preallocSizeBy8)
@@ -126,6 +128,7 @@ func BenchmarkOneBlockBy8(b *testing.B) {
 	if !useAVX2 {
 		b.Skip("AVX2 is not supported")
 	}
+
 	digs := initState8()
 	p := createOneBlockBy8()
 	buffer := make([]byte, preallocSizeBy8)
@@ -141,6 +144,7 @@ func BenchmarkTwoBlocksBy8(b *testing.B) {
 	if !useAVX2 {
 		b.Skip("AVX2 is not supported")
 	}
+
 	digs := initState8()
 	p := createTwoBlocksBy8()
 	buffer := make([]byte, preallocSizeBy8)

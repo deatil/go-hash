@@ -1,6 +1,5 @@
 package sm3
 
-
 func blockGeneric(d *digest, data []byte) {
     var W [68]uint32
     var SS1, SS2, TT1, TT2 uint32

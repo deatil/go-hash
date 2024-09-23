@@ -1,4 +1,4 @@
-name: macOs
+name: macOS
 
 on:
   push:
@@ -28,4 +28,3 @@ jobs:
       run: go test -v ./...
       env:
         GODEBUG: x509sha1=1
-        GOARCH: ${{ matrix.arch }}
