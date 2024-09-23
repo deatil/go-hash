@@ -143,7 +143,7 @@ TEXT ·blockSM3NI(SB), 0, $0
 	VREV64  V9.S4, V9.S4
 	VEXT $8, V9.B16, V9.B16, V9.B16
 	LDPW	(0*8)(R2), (R5, R6)                        // load t constants
-    
+
 blockloop:
 	VLD1.P	64(R1), [V0.B16, V1.B16, V2.B16, V3.B16]    // load 64bytes message
 	VMOV	V8.B16, V15.B16                             // backup: V8 h(dcba)
@@ -151,7 +151,7 @@ blockloop:
 	VREV32	V0.B16, V0.B16                              // prepare for using message in Byte format
 	VREV32	V1.B16, V1.B16
 	VREV32	V2.B16, V2.B16
-	VREV32	V3.B16, V3.B16    
+	VREV32	V3.B16, V3.B16
 	// first 16 rounds
 	VMOV R5, V11.S[3]
 `[1:])
@@ -186,14 +186,14 @@ sm3ret:
 	VEXT $8, V8.B16, V8.B16, V8.B16
 	VREV64  V9.S4, V9.S4
 	VEXT $8, V9.B16, V9.B16, V9.B16
-	VST1	[V8.S4, V9.S4], (R0)                       // store hash value H	
+	VST1	[V8.S4, V9.S4], (R0)                       // store hash value H
 	RET
 
 `[1:])
 	src := buf.Bytes()
 	// fmt.Println(string(src))
 
-	err := os.WriteFile("sm3blockni_arm64.s", src, 0644)
+	err := os.WriteFile("block_ni_arm64.s", src, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
