@@ -104,7 +104,7 @@ GLOBL r08_mask<>(SB), 8, $32
 	VMOVDQU (i*32)(srcPtr5), e; \
 	VMOVDQU (i*32)(srcPtr6), f; \
 	VMOVDQU (i*32)(srcPtr7), g; \
-	VMOVDQU (i*32)(srcPtr8), h; \    
+	VMOVDQU (i*32)(srcPtr8), h; \
 	; \
 	TRANSPOSE_MATRIX(a, b, c, d, e, f, g, h, TMP1, TMP2, TMP3, TMP4); \
 	REV32(a, b, c, d, e, f, g, h); \
@@ -172,7 +172,7 @@ GLOBL r08_mask<>(SB), 8, $32
 // DST = (Y XOR Z) AND X XOR Z
 #define GG1(X, Y, Z, DST) \
 	VPXOR Y, Z, DST; \
-	VPAND X, DST, DST; \ 
+	VPAND X, DST, DST; \
 	VPXOR Z, DST, DST
 
 #define SS1SS2(index, a, e, SS1, SS2) \
@@ -196,7 +196,7 @@ GLOBL r08_mask<>(SB), 8, $32
 	SS1SS2(index, a, e, Y12, Y13); \
 	; \
 	FF0(a, b, c, Y14); \
-	VPADDD d, Y14, Y14; \ // (a XOR b XOR c) + d 
+	VPADDD d, Y14, Y14; \ // (a XOR b XOR c) + d
 	loadWord(Y10, index); \
 	loadWord(Y11, index+4); \
 	VPXOR Y10, Y11, Y11; \ //Wt XOR Wt+4

@@ -7,6 +7,12 @@ import (
 	"testing"
 )
 
+// p || state || words
+// p = 64 * 8 * 2 = 1024
+// state = 8 * 32 = 256
+// words = 68 * 32 = 2176
+const preallocSizeBy8 = 3456
+
 func initState8() [8]*[8]uint32 {
 	d := new(digest)
 	d.Reset()
