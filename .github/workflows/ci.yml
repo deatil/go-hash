@@ -15,11 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set timezone
-        uses: szenius/set-timezone@v1.0
-        with:
-          timezoneLinux: "Asia/Shanghai"
-
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
