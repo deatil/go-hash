@@ -26,7 +26,7 @@ func block(dig *digest, p []byte) {
 	if !useSM3NI {
 		blockARM64(dig, p)
 	} else {
-		h := dig.h[:]
+		h := dig.s[:]
 		blockSM3NI(h, p, t)
 	}
 }

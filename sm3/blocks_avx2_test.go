@@ -10,14 +10,14 @@ import (
 func initState8() [8]*[8]uint32 {
 	d := new(digest)
 	d.Reset()
-	var dig1 = d.h
-	var dig2 = d.h
-	var dig3 = d.h
-	var dig4 = d.h
-	var dig5 = d.h
-	var dig6 = d.h
-	var dig7 = d.h
-	return [8]*[8]uint32{&d.h, &dig1, &dig2, &dig3, &dig4, &dig5, &dig6, &dig7}
+	var dig1 = d.s
+	var dig2 = d.s
+	var dig3 = d.s
+	var dig4 = d.s
+	var dig5 = d.s
+	var dig6 = d.s
+	var dig7 = d.s
+	return [8]*[8]uint32{&d.s, &dig1, &dig2, &dig3, &dig4, &dig5, &dig6, &dig7}
 }
 
 func createOneBlockBy8() [8]*byte {

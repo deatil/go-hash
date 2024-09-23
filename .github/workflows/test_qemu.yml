@@ -14,7 +14,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.18.x]
+        go-version: [1.20]
         arch: [arm64]
     runs-on: ubuntu-latest
     steps:
@@ -28,6 +28,9 @@ jobs:
 
     - name: Check out code
       uses: actions/checkout@v4
+
+    - name: Go mod tidy
+      run: go mod tidy
 
     - name: Test
       run: go test -v -short ./...
