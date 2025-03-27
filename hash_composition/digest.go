@@ -10,11 +10,11 @@ type digest struct {
     h2 hash.Hash
 }
 
-// New returns a new digest computing the hash_composition checksum
-func newDigest(h1, h2 hash.Hash) *digest {
+// newDigest returns a new digest computing the hash_composition checksum
+func newDigest(h1, h2 func() hash.Hash) *digest {
     d := new(digest)
-    d.h1 = h1
-    d.h2 = h2
+    d.h1 = h1()
+    d.h2 = h2()
     d.Reset()
 
     return d

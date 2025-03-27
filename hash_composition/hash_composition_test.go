@@ -2,7 +2,9 @@ package hash_composition
 
 import (
     "fmt"
+    "hash"
     "testing"
+    "encoding/hex"
     "crypto/sha256"
     "crypto/sha512"
 )
@@ -10,7 +12,7 @@ import (
 func Test_Hash256(t *testing.T) {
     msg := []byte("test-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-data")
 
-    h := New(sha256.New(), sha256.New())
+    h := New(sha256.New, sha256.New)
     h.Write(msg)
     dst := h.Sum(nil)
 
@@ -28,7 +30,7 @@ func Test_Hash256(t *testing.T) {
 func Test_Hash512(t *testing.T) {
     msg := []byte("test-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-datatest-data")
 
-    h := New(sha512.New(), sha512.New())
+    h := New(sha512.New, sha512.New)
     h.Write(msg)
     dst := h.Sum(nil)
 
@@ -40,5 +42,63 @@ func Test_Hash512(t *testing.T) {
     res := fmt.Sprintf("%x", dst)
     if res != check {
         t.Errorf("Hash error, got %s, want %s", res, check)
+    }
+}
+
+type testHash struct {
+    Sha1 func() hash.Hash
+    Sha2 func() hash.Hash
+    MsgBytes []byte
+    MD string
+}
+
+var testCases = []testHash{
+    {
+        Sha1:     sha256.New,
+        Sha2:     sha256.New,
+        MsgBytes: []byte(`test-datatest-datatest-datatest-datatest-data`),
+        MD:       `e6efa585c2feca0df7350c9e889b6881012a0540d72a3d29bd742370e2c681d0`,
+    },
+    {
+        Sha1:     sha512.New384,
+        Sha2:     sha512.New384,
+        MsgBytes: []byte(`test-datatest-datatest-datatest-datatest-data`),
+        MD:       `486d463b3ef910975fbf9944803d59e2fa49554c09f49c54e4d45741cf215e7b1f201245499e958500161ea862810e00`,
+    },
+    {
+        Sha1:     sha512.New,
+        Sha2:     sha512.New,
+        MsgBytes: []byte(`test-datatest-datatest-datatest-datatest-data`),
+        MD:       `0bf6edcacbd2c5adac6c111d24c43e18f7e03c0cc47499d9b3312a1916fdd13cae75d86a6a7c2ffc48423e79fd21bb91ea12bb68e065a8b8bd186530608fdd8a`,
+    },
+}
+
+func Test_Hash_Check(t *testing.T) {
+    var dst []byte
+
+    for _, tc := range testCases {
+        h := New(tc.Sha1, tc.Sha2)
+        h.Write(tc.MsgBytes)
+        dst = h.Sum(dst[:0])
+
+        dString := hex.EncodeToString(dst)
+
+        if dString != tc.MD {
+            t.Errorf("hash failed. got : %s, want: %s", dString, tc.MD)
+            return
+        }
+    }
+}
+
+func Test_Sum(t *testing.T) {
+    for _, tc := range testCases {
+        dst := Sum(tc.Sha1, tc.Sha2, tc.MsgBytes)
+
+        dString := hex.EncodeToString(dst[:])
+
+        if dString != tc.MD {
+            t.Errorf("hash failed. got : %s, want: %s", dString, tc.MD)
+            return
+        }
     }
 }
