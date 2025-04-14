@@ -12,7 +12,7 @@
 ### Desc
 
 *  A Go package that get data digest hash
-*  hashs has funct MD2/MD4/MD5/Hmac/Ripemd160/SHA1/SHA3/SHA256/SM3/Xxhash/Gost etc
+*  go-hash have digest MD2/MD4/MD5/Hmac/Ripemd160/SHA1/SHA3/SHA256/SM3/Xxhash/Gost etc
 
 
 ### Download

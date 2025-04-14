@@ -10,8 +10,8 @@
 
 ### 项目介绍
 
-*  常用的数据摘要获取算法
-*  算法包括: (MD2/MD4/MD5/Hmac/Ripemd160/SHA1/SHA3/SHA256/SM3/Xxhash/Gost等)
+*  常用的数据摘要算法
+*  摘要算法包括: (MD2/MD4/MD5/Hmac/Ripemd160/SHA1/SHA3/SHA256/SM3/Xxhash/Gost等)
 
 
 ### 下载安装
